@@ -1,0 +1,128 @@
+# --------------------------------------------
+# Hospital Patient Management System
+# Using Queue and Priority Queue
+# --------------------------------------------
+
+class Patient:
+    def __init__(self, pid, name, age, problem, severity):
+        self.pid = pid
+        self.name = name
+        self.age = age
+        self.problem = problem
+        self.severity = severity  # Higher number = more serious
+
+
+# Queue for normal patients (FIFO)
+class NormalQueue:
+    def __init__(self):
+        self.data = []
+
+    def add(self, patient):
+        self.data.append(patient)
+        print(f"{patient.name} added to normal queue.")
+
+    def remove(self):
+        if len(self.data) > 0:
+            return self.data.pop(0)
+        return None
+
+    def show(self):
+        if len(self.data) == 0:
+            print("\nNo normal patients waiting.")
+            return
+        print("\nNormal Patients Waiting:")
+        for i, p in enumerate(self.data, 1):
+            print(f"{i}. {p.name} (ID:{p.pid}, Age:{p.age}, Problem:{p.problem})")
+
+
+# Priority Queue for emergency patients
+class EmergencyQueue:
+    def __init__(self):
+        self.data = []
+
+    def add(self, patient):
+        self.data.append(patient)
+        # Sort by severity (highest first)
+        self.data.sort(key=lambda x: x.severity, reverse=True)
+        print(f"{patient.name} added to emergency queue (Severity {patient.severity}).")
+
+    def remove(self):
+        if len(self.data) > 0:
+            return self.data.pop(0)
+        return None
+
+    def show(self):
+        if len(self.data) == 0:
+            print("\nNo emergency patients waiting.")
+            return
+        print("\nEmergency Patients Waiting:")
+        for i, p in enumerate(self.data, 1):
+            print(f"{i}. {p.name} (ID:{p.pid}, Severity:{p.severity}, Problem:{p.problem})")
+
+
+# Main Hospital System
+class Hospital:
+    def __init__(self):
+        self.normal = NormalQueue()
+        self.emergency = EmergencyQueue()
+
+    def add_patient(self, pid, name, age, problem, severity, type_):
+        p = Patient(pid, name, age, problem, severity)
+        if type_.lower() == "emergency":
+            self.emergency.add(p)
+        else:
+            self.normal.add(p)
+
+    def attend_patient(self):
+        if len(self.emergency.data) > 0:
+            p = self.emergency.remove()
+            print(f"\n🚑 Attending emergency patient: {p.name} (Severity {p.severity})")
+        elif len(self.normal.data) > 0:
+            p = self.normal.remove()
+            print(f"\n👩‍⚕️ Attending normal patient: {p.name}")
+        else:
+            print("\nNo patients to attend.")
+
+    def show_waiting(self):
+        self.emergency.show()
+        self.normal.show()
+
+
+# -----------------------------
+# Menu Driven Program
+# -----------------------------
+if __name__ == "__main__":
+    print("=== Hospital Patient Management System ===")
+    hospital = Hospital()
+
+    while True:
+        print("\n--- MENU ---")
+        print("1. Add Patient")
+        print("2. Attend Next Patient")
+        print("3. Display Waiting Lists")
+        print("4. Exit")
+        choice = input("Enter your choice: ")
+
+        if choice == '1':
+            pid = input("Enter Patient ID: ")
+            name = input("Enter Name: ")
+            age = int(input("Enter Age: "))
+            problem = input("Enter Problem Type: ")
+            type_ = input("Enter Patient Type (Normal/Emergency): ")
+            severity = 0
+            if type_.lower() == "emergency":
+                severity = int(input("Enter Severity Level (1-10): "))
+            hospital.add_patient(pid, name, age, problem, severity, type_)
+
+        elif choice == '2':
+            hospital.attend_patient()
+
+        elif choice == '3':
+            hospital.show_waiting()
+
+        elif choice == '4':
+            print("\nSystem Closed. Thank you!")
+            break
+
+        else:
+            print("\nInvalid choice. Please try again.")
