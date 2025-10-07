@@ -1,0 +1,163 @@
+# --------------------------------------------
+# Railway Reservation System
+# Using Linked List for booked seats
+# and Queue for waiting list management
+# --------------------------------------------
+
+# Node for each passenger (Linked List element)
+class Passenger:
+    def __init__(self, name, age, gender, train, seat):
+        self.name = name
+        self.age = age
+        self.gender = gender
+        self.train = train
+        self.seat = seat
+        self.next = None
+
+# Linked List to store booked passengers
+class BookedSeats:
+    def __init__(self):
+        self.start = None
+        self.size = 0
+
+    # Add passenger at the end
+    def book(self, name, age, gender, train, seat):
+        new_pass = Passenger(name, age, gender, train, seat)
+        if self.start is None:
+            self.start = new_pass
+        else:
+            temp = self.start
+            while temp.next:
+                temp = temp.next
+            temp.next = new_pass
+        self.size += 1
+        print(f"\nSeat booked successfully for {name}")
+
+    # Cancel booking by passenger name
+    def cancel(self, name):
+        if self.start is None:
+            print("\nNo bookings yet.")
+            return False
+
+        temp = self.start
+        prev = None
+        while temp:
+            if temp.name == name:
+                if prev is None:
+                    self.start = temp.next
+                else:
+                    prev.next = temp.next
+                self.size -= 1
+                print(f"\nBooking cancelled for {name}")
+                return True
+            prev = temp
+            temp = temp.next
+        print("\nPassenger not found.")
+        return False
+
+    # Show booked passengers
+    def show(self):
+        if self.start is None:
+            print("\nNo seats booked yet.")
+            return
+        print("\nList of Booked Passengers:")
+        temp = self.start
+        i = 1
+        while temp:
+            print(f"{i}. {temp.name} ({temp.age}, {temp.gender}) - Train: {temp.train}, Seat: {temp.seat}")
+            temp = temp.next
+            i += 1
+
+# Simple Queue for waiting list
+class WaitingList:
+    def __init__(self):
+        self.q = []
+
+    def add(self, data):
+        self.q.append(data)
+        print(f"{data['name']} added to waiting list.")
+
+    def pop(self):
+        if len(self.q) > 0:
+            return self.q.pop(0)
+        return None
+
+    def show(self):
+        if len(self.q) == 0:
+            print("\nNo one in waiting list.")
+            return
+        print("\nPeople in Waiting List:")
+        for i, p in enumerate(self.q, 1):
+            print(f"{i}. {p['name']} ({p['age']}, {p['gender']}) - Train: {p['train']}, Seat: {p['seat']}")
+
+# Main class to combine booking and waiting list
+class RailwaySystem:
+    def __init__(self, total):
+        self.total_seats = total
+        self.booked = BookedSeats()
+        self.waiting = WaitingList()
+
+    def add_passenger(self, name, age, gender, train, seat):
+        if self.booked.size < self.total_seats:
+            self.booked.book(name, age, gender, train, seat)
+        else:
+            self.waiting.add({
+                'name': name,
+                'age': age,
+                'gender': gender,
+                'train': train,
+                'seat': seat
+            })
+
+    def cancel_passenger(self, name):
+        done = self.booked.cancel(name)
+        if done:
+            # Move one from waiting list to booked
+            next_person = self.waiting.pop()
+            if next_person:
+                print(f"Seat given to waiting passenger: {next_person['name']}")
+                self.booked.book(next_person['name'], next_person['age'],
+                                 next_person['gender'], next_person['train'], next_person['seat'])
+
+    def show_all(self):
+        self.booked.show()
+        self.waiting.show()
+
+
+# -----------------------------
+# Menu Driven Program
+# -----------------------------
+if __name__ == "__main__":
+    print("=== Railway Reservation System ===")
+    total = int(input("Enter total number of seats in train: "))
+    rs = RailwaySystem(total)
+
+    while True:
+        print("\n--- MENU ---")
+        print("1. Book Ticket")
+        print("2. Cancel Ticket")
+        print("3. Display Details")
+        print("4. Exit")
+        ch = input("Enter your choice: ")
+
+        if ch == '1':
+            name = input("Name: ")
+            age = int(input("Age: "))
+            gender = input("Gender: ")
+            train = input("Train Number: ")
+            seat = input("Seat Type (Window/Middle/Aisle): ")
+            rs.add_passenger(name, age, gender, train, seat)
+
+        elif ch == '2':
+            name = input("Enter name to cancel ticket: ")
+            rs.cancel_passenger(name)
+
+        elif ch == '3':
+            rs.show_all()
+
+        elif ch == '4':
+            print("\nThank you for using the system.")
+            break
+
+        else:
+            print("\nInvalid choice! Please try again.")
